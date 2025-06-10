@@ -480,8 +480,8 @@ const Projects = () => {
                 boundaryCount={1}
                 sx={{
                   '& .Mui-selected': {
-                    backgroundColor: '#fff !important', // active page color
-                    color: '#fff !important',
+                    backgroundColor: '#F7B6CF !important', // active page color
+                    color: '#222 !important',
                     borderRadius: '8px'
                   },
                   '& .MuiPaginationItem-root': {
