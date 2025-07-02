@@ -7,6 +7,7 @@ import About from './components/About';
 import Services from './components/Services';
 import Projects from './components/Projects';
 import Results from './components/Results';
+import Tools from './components/Tools';
 import Contact from './components/Contact';
 
 
@@ -49,6 +50,9 @@ function App() {
           </section>
           <section id="results">
             <Results />
+          </section>
+          <section id="tools">
+            <Tools />
           </section>
           <section id="contact">
             <Contact />

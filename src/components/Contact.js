@@ -1,16 +1,34 @@
 import React from 'react';
 import { Container, Typography, Box, Grid, Link } from '@mui/material';
 import styled from 'styled-components';
-import FacebookIcon from '@mui/icons-material/Facebook';
-import InstagramIcon from '@mui/icons-material/Instagram';
-import EmailIcon from '@mui/icons-material/Email';
 
 const ContactSection = styled(Box)`
   min-height: 60vh;
   padding: 4rem 0 2rem 0;
-  background: #082E04;
+  background: #D9E4D7;
   display: flex;
   align-items: center;
+  
+  @media (max-width: 479px) {
+    min-height: 40vh;
+    padding: 1rem 0 1rem 0;
+  }
+  @media (min-width: 480px) and (max-width: 767px) {
+    min-height: 45vh;
+    padding: 1rem 0 2rem 0;
+  }
+  @media (min-width: 768px) and (max-width: 991px) {
+    min-height: 58vh;
+    padding: 3.5rem 0 1.8rem 0;
+  }
+  @media (min-width: 992px) and (max-width: 1199px) {
+    min-height: 60vh;
+    padding: 4rem 0 2rem 0;
+  }
+  @media (min-width: 1200px) {
+    min-height: 30vh;
+    padding: 2rem 0 2.5rem 0;
+  }
 `;
 
 const BigHeading = styled(Typography)`
@@ -18,7 +36,7 @@ const BigHeading = styled(Typography)`
   font-family: 'SAFIRA MARCH' !important;
   font-size: 3rem;
   font-weight: 900;
-  color: #fff;
+  color: #D71768;
   text-align: center;
   letter-spacing: 2px;
   margin-bottom: 1.5rem;
@@ -45,7 +63,7 @@ const SubHeading = styled(Typography)`
 font-family: 'Didact Gothic' !important;
   font-size: 2rem;
   font-weight: 700;
-  color: #fff;
+  color: #D71768;
   text-align: center;
   margin-bottom: 2.5rem;
   text-transform: uppercase;
@@ -63,7 +81,7 @@ font-family: 'Didact Gothic' !important;
     font-size: 1.8rem;
   }
   @media (min-width: 1200px) {
-    font-size: 2rem;
+    font-size: 1.8rem;
   }
 }
 `;
@@ -106,14 +124,38 @@ const ContactItem = styled(Box)`
 }
 `;
 
+const LogoImage = styled.img`
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  transition: transform 0.3s ease;
+  
+  &:hover {
+    transform: scale(1.1);
+  }
+  
+  @media (max-width: 599px) {
+    width: 32px;
+    height: 32px;
+  }
+  @media (min-width: 600px) and (max-width: 899px) {
+    width: 40px;
+    height: 40px;
+  }
+  @media (min-width: 900px) {
+    width: 48px;
+    height: 48px;
+  }
+`;
+
 const ContactLink = styled(Link)`
   && {
-  color: #fff !important;
+  color: #D71768 !important;
   font-size: 2rem;
   font-weight: 500;
   text-decoration: underline;
   &:hover {
-    color: #fff;
+    color: #D71768;
     opacity: 0.8;
     text-decoration: underline;
   }
@@ -142,18 +184,15 @@ const Contact = () => (
         READY FOR YOUR GROWTH?
       </BigHeading>
       <SubHeading>
-        SEND ME A MESSAGE AND LET'S GET STARTED! ✨
+        SEND ME A MESSAGE AND LET'S GET STARTED!
       </SubHeading>
       <ContactRow container spacing={4}>
         <Grid item xs={12} md={4}>
           <ContactItem>
-            <FacebookIcon sx={{ 
-              fontSize: {
-                xs: 32,    // 0-599px
-                sm: 40,    // 600-899px
-                md: 48     // 900px+
-              }
-            }} />
+            <LogoImage 
+              src="/assets/Tools/facebook-logo.png" 
+              alt="Facebook Logo"
+            />
             <ContactLink href="https://www.facebook.com/jana.virtuales?mibextid=wwXIfr&mibextid=wwXIfr" target="_blank" underline="always">
               Jana Virtuales
             </ContactLink>
@@ -161,13 +200,10 @@ const Contact = () => (
         </Grid>
         <Grid item xs={12} md={4}>
           <ContactItem>
-            <InstagramIcon sx={{ 
-              fontSize: {
-                xs: 32,    // 0-599px
-                sm: 40,    // 600-899px
-                md: 48     // 900px+
-              }
-            }} />
+            <LogoImage 
+              src="/assets/Tools/instagram-logo.png" 
+              alt="Instagram Logo"
+            />
             <ContactLink href="https://www.instagram.com/janavirtuales?igsh=MTdpZzRncTB3M2xuNg%3D%3D&utm_source=qr" target="_blank" underline="always">
               janavirtuales
             </ContactLink>
@@ -175,13 +211,10 @@ const Contact = () => (
         </Grid>
         <Grid item xs={12} md={4}>
           <ContactItem>
-            <EmailIcon sx={{ 
-              fontSize: {
-                xs: 32,    // 0-599px
-                sm: 40,    // 600-899px
-                md: 48     // 900px+
-              }
-            }} />
+            <LogoImage 
+              src="/assets/Tools/gmail-logo.png" 
+              alt="Email Logo"
+            />
             <ContactLink href="https://mail.google.com/mail/?view=cm&source=mailto&to=janavirtuales@gmail.com" underline="always">
               janavirtuales@gmail.com
             </ContactLink>

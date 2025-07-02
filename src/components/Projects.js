@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Typography, Box, Card, Tabs, Tab, Pagination, Modal } from '@mui/material';
+import { Container, Typography, Box, Card, Pagination, Modal } from '@mui/material';
 import { motion } from 'framer-motion';
 import styled from 'styled-components';
 
 const ProjectsSection = styled(Box)`
-  background:#D9E4D7 ;
+  background:#082E04 ;
   min-height: 100vh;
   padding: 6rem 0 2rem 0;
   @media (max-width: 479px) {
@@ -92,6 +92,30 @@ const ProjectImage = styled('img')`
   max-width: 100%;
   max-height: 320px;
   margin: 0 auto;
+  border-radius: 8px;
+  transition: transform 0.3s ease;
+  
+  &:hover {
+    transform: scale(1.02);
+  }
+  
+  @media (max-width: 479px) {
+    max-height: 180px;
+    border-radius: 4px;
+  }
+  
+  @media (min-width: 480px) and (max-width: 767px) {
+    max-height: 220px;
+    border-radius: 6px;
+  }
+  
+  @media (min-width: 768px) and (max-width: 991px) {
+    max-height: 260px;
+  }
+  
+  @media (min-width: 992px) and (max-width: 1199px) {
+    max-height: 290px;
+  }
 `;
 
 const categories = [
@@ -283,24 +307,24 @@ const ProjectsGrid = styled('div')`
   justify-items: center;
 
   @media (max-width: 479px) {
-    grid-template-columns: 1fr;
-    gap: 0.2rem;
-    margin-bottom: 0.2rem;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+    margin-bottom: 1rem;
   }
   @media (min-width: 480px) and (max-width: 767px) {
     grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 0.4rem;
-    margin-bottom: 0.5rem;
+    gap: 0.8rem;
+    margin-bottom: 1.2rem;
   }
   @media (min-width: 768px) and (max-width: 991px) {
     grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 0.7rem;
-    margin-bottom: 1rem;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
   }
   @media (min-width: 992px) and (max-width: 1199px) {
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 1.2rem;
-    margin-bottom: 1.5rem;
+    gap: 1.5rem;
+    margin-bottom: 1.8rem;
   }
   @media (min-width: 1200px) {
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -311,24 +335,173 @@ const ProjectsGrid = styled('div')`
 
 const ProjectsTitle = styled(Typography)`
 && {
-color: #D71768;
-  margin-bottom: 2rem !important;
-  text-align: center;
-  font-family: 'SAFIRA MARCH' !important;
-  font-weight: 700;
+  color: #F7B6CF;
+margin-bottom: 1rem;
+text-align: center;
+font-family: 'SAFIRA MARCH' !important;
+ width: 100%;
+
+@media (max-width: 479px) {
+  font-size: 1.9rem;
+  margin-bottom: 1.5rem;
+  margin-top: 1rem;
+}
+
+@media (min-width: 480px) and (max-width: 767px) {
+  font-size: 2.5rem;
+  margin-bottom: 1.7rem;
+  margin-top: 1rem;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  font-size: 3rem;
+  margin-bottom: 1.7rem;
+  margin-top: -1rem;
+}
+
+@media (min-width: 992px) and (max-width: 1199px) {
+  font-size: 3rem;
+  margin-bottom: 1.7rem;
+  margin-top: 1.7rem;
+}
+
+@media (min-width: 1200px) {
+  font-size: 4rem;
+  margin-bottom: 2.5rem;
+  margin-top: -1.2rem;
+}
+}
+`;
+
+const TabContainer = styled(Box)`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 3rem;
+  flex-wrap: wrap;
+  
+  @media (max-width: 479px) {
+    gap: 0.5rem;
+    margin-bottom: 1.2rem;
+  }
   @media (min-width: 480px) and (max-width: 767px) {
-    font-size: 2rem;
+    gap: 0.7rem;
+    margin-bottom: 2rem;
   }
   @media (min-width: 768px) and (max-width: 991px) {
-    font-size: 2.7rem;
+    gap: 0.8rem;
+    margin-bottom: 2.5rem;
   }
   @media (min-width: 992px) and (max-width: 1199px) {
-    font-size: 3.5rem;
+    gap: 0.9rem;
+    margin-bottom: 2.8rem;
+  }
+`;
+
+const TabButton = styled.button`
+  background: ${props => props.active ? 
+    'linear-gradient(135deg, #D71768 0%, #F7B6CF 100%)' : 
+    'linear-gradient(135deg, #fff 0%, #f8f9fa 100%)'};
+  color: ${props => props.active ? '#fff' : '#D71768'};
+  border: 2px solid ${props => props.active ? '#D71768' : '#F7B6CF'};
+  border-radius: 25px;
+  padding: 0.8rem 2rem;
+  font-family: 'Didact Gothic', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  box-shadow: ${props => props.active ? 
+    '0 4px 16px rgba(215, 23, 104, 0.25)' : 
+    '0 2px 8px rgba(0, 0, 0, 0.08)'};
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, #D71768 0%, #F7B6CF 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    border-radius: 23px;
+  }
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: ${props => props.active ? 
+      '0 6px 20px rgba(215, 23, 104, 0.35)' : 
+      '0 4px 16px rgba(247, 182, 207, 0.25)'};
+    border-color: #D71768;
+    
+    &::before {
+      opacity: ${props => props.active ? '0' : '1'};
+    }
+  }
+  
+  &:hover:not([data-active="true"]) {
+    color: #fff;
+  }
+  
+  &:active {
+    transform: translateY(-1px);
+  }
+  
+  & > span {
+    position: relative;
+    z-index: 2;
+  }
+  
+  @media (max-width: 479px) {
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+    border-radius: 20px;
+    
+    &::before {
+      border-radius: 18px;
+    }
+  }
+  @media (min-width: 480px) and (max-width: 767px) {
+    padding: 0.6rem 1.3rem;
+    font-size: 0.8rem;
+    border-radius: 22px;
+    
+    &::before {
+      border-radius: 20px;
+    }
+  }
+  @media (min-width: 768px) and (max-width: 991px) {
+    padding: 0.6rem 1.5rem;
+    font-size: 1rem;
+    border-radius: 24px;
+    
+    &::before {
+      border-radius: 22px;
+    }
+  }
+  @media (min-width: 992px) and (max-width: 1199px) {
+    padding: 0.8rem 1.9rem;
+    font-size: 1.05rem;
+    border-radius: 25px;
+    
+    &::before {
+      border-radius: 23px;
+    }
   }
   @media (min-width: 1200px) {
-    font-size: 4.4rem;
+    padding: 0.8rem 2rem;
+    font-size: 1.1rem;
+    border-radius: 25px;
+    
+    &::before {
+      border-radius: 23px;
+    }
   }
-}
 `;
 
 const Projects = () => {
@@ -340,7 +513,13 @@ const Projects = () => {
 
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth <= 700) {
+      if (window.innerWidth <= 479) {
+        setProjectsPerPage(4); // Show 4 projects on mobile for better viewing
+      } else if (window.innerWidth <= 767) {
+        setProjectsPerPage(8);
+      } else if (window.innerWidth <= 991) {
+        setProjectsPerPage(8);
+      } else if (window.innerWidth <= 1199) {
         setProjectsPerPage(8);
       } else {
         setProjectsPerPage(10);
@@ -351,8 +530,8 @@ const Projects = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const handleCategoryChange = (event, newValue) => {
-    setSelectedCategory(newValue);
+  const handleCategoryChange = (category) => {
+    setSelectedCategory(category);
     setPage(1);
   };
 
@@ -388,37 +567,18 @@ const Projects = () => {
             My Projects
           </ProjectsTitle>
 
-          <Box sx={{ display: 'flex', justifyContent: 'center', mb: 4 }}>
-            <Tabs
-              value={selectedCategory}
-              onChange={handleCategoryChange}
-              textColor="primary"
-              indicatorColor="primary"
-              variant="scrollable"
-              scrollButtons="auto"
-              sx={{
-                background: '#F7B6CF',
-                borderRadius: '8px',
-                minHeight: { xs: '38px', sm: '42px', md: '45px', lg: '48px', xl: '52px' },
-                padding: { xs: '0 2px', sm: '0 10px', md: '0 30px', lg: '0 50px', xl: '0 80px' },
-                '& .MuiTab-root': { 
-                  color: '#D71768', 
-                  fontWeight: 950, 
-                  fontFamily: 'Didact Gothic',
-                  fontSize: { xs: '0.85rem', sm: '1rem', md: '1.15rem', lg: '1.25rem', xl: '1.35rem' },
-                  minHeight: { xs: '38px', sm: '42px', md: '45px', lg: '48px', xl: '52px' },
-                  padding: { xs: '7px 6px', sm: '9px 12px', md: '13px 25px', lg: '15px 32px', xl: '18px 40px' },
-                  letterSpacing: '1px',
-                },
-                '& .Mui-selected': { color: '#fff !important' },
-                '& .MuiTabs-indicator': { backgroundColor: '#fff !important'},
-              }}
-            >
-              {categories.map((cat) => (
-                <Tab key={cat} label={cat} value={cat} />
-              ))}
-            </Tabs>
-          </Box>
+          <TabContainer>
+            {categories.map((category) => (
+              <TabButton
+                key={category}
+                active={selectedCategory === category}
+                data-active={selectedCategory === category}
+                onClick={() => handleCategoryChange(category)}
+              >
+                <span>{category}</span>
+              </TabButton>
+            ))}
+          </TabContainer>
 
           <ProjectsGrid>
             {paginatedProjects.map((project, index) => (
@@ -479,15 +639,100 @@ const Projects = () => {
                 siblingCount={1}
                 boundaryCount={1}
                 sx={{
-                  '& .Mui-selected': {
-                    backgroundColor: '#F7B6CF !important', // active page color
-                    color: '#222 !important',
-                    borderRadius: '8px'
-                  },
                   '& .MuiPaginationItem-root': {
-                    color: '#222', // normal page color
+                    color: '#D71768',
                     fontWeight: 600,
-                    borderRadius: '8px'
+                    fontFamily: 'Didact Gothic, sans-serif',
+                    fontSize: '1rem',
+                    margin: '0 0.3rem',
+                    minWidth: '40px',
+                    height: '40px',
+                    borderRadius: '20px',
+                    border: '2px solid #F7B6CF',
+                    background: 'linear-gradient(135deg, #fff 0%, #f8f9fa 100%)',
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+                    '&:hover': {
+                      background: 'linear-gradient(135deg, #D71768 0%, #F7B6CF 100%)',
+                      color: '#fff',
+                      borderColor: '#D71768',
+                      transform: 'translateY(-2px)',
+                      boxShadow: '0 4px 16px rgba(247, 182, 207, 0.25)',
+                    },
+                    '&.Mui-disabled': {
+                      background: 'linear-gradient(135deg, #f1f3f4 0%, #e8eaed 100%)',
+                      color: '#9aa0a6',
+                      borderColor: '#e8eaed',
+                      opacity: 0.6,
+                    }
+                  },
+                  '& .Mui-selected': {
+                    backgroundColor: 'transparent !important',
+                    background: 'linear-gradient(135deg, #D71768 0%, #F7B6CF 100%) !important',
+                    color: '#fff !important',
+                    borderColor: '#D71768 !important',
+                    boxShadow: '0 4px 16px rgba(215, 23, 104, 0.25) !important',
+                    '&:hover': {
+                      background: 'linear-gradient(135deg, #D71768 0%, #F7B6CF 100%) !important',
+                      transform: 'translateY(-1px)',
+                      boxShadow: '0 6px 20px rgba(215, 23, 104, 0.35) !important',
+                    }
+                  },
+                  '& .MuiPaginationItem-previousNext': {
+                    borderRadius: '20px',
+                    minWidth: '40px',
+                    fontSize: '1.1rem',
+                    '& .MuiSvgIcon-root': {
+                      fontSize: '1.2rem',
+                    }
+                  },
+                  '@media (max-width: 479px)': {
+                    '& .MuiPaginationItem-root': {
+                      minWidth: '32px',
+                      height: '32px',
+                      fontSize: '0.85rem',
+                      margin: '0 0.2rem',
+                      borderRadius: '16px',
+                    },
+                    '& .MuiPaginationItem-previousNext': {
+                      borderRadius: '16px',
+                      minWidth: '32px',
+                      '& .MuiSvgIcon-root': {
+                        fontSize: '1rem',
+                      }
+                    }
+                  },
+                  '@media (min-width: 480px) and (max-width: 767px)': {
+                    '& .MuiPaginationItem-root': {
+                      minWidth: '36px',
+                      height: '36px',
+                      fontSize: '0.9rem',
+                      margin: '0 0.25rem',
+                      borderRadius: '18px',
+                    },
+                    '& .MuiPaginationItem-previousNext': {
+                      borderRadius: '18px',
+                      minWidth: '36px',
+                      '& .MuiSvgIcon-root': {
+                        fontSize: '1.1rem',
+                      }
+                    }
+                  },
+                  '@media (min-width: 768px) and (max-width: 991px)': {
+                    '& .MuiPaginationItem-root': {
+                      minWidth: '38px',
+                      height: '38px',
+                      fontSize: '0.95rem',
+                      margin: '0 0.28rem',
+                      borderRadius: '19px',
+                    },
+                    '& .MuiPaginationItem-previousNext': {
+                      borderRadius: '19px',
+                      minWidth: '38px',
+                      '& .MuiSvgIcon-root': {
+                        fontSize: '1.15rem',
+                      }
+                    }
                   }
                 }}
               />

@@ -79,7 +79,7 @@ const CARD_GAP = 32;
 
 const ServicesSection = styled(Box)`
   width: 100%;
-  background: #082E04;
+  background:#D9E4D7;
   padding: 5rem 0 5rem 0;
   display: flex;
   flex-direction: column;
@@ -98,45 +98,48 @@ const ServicesSection = styled(Box)`
 const SectionTitle = styled(Typography)`
   && {
     font-size: 4.5rem;
-    font-weight: 700;
-    color:#F7B6CF;
-    font-family: 'SAFIRA MARCH', serif;
+    font-weight: 800;
+    color:#D71768;
+    font-family: 'SAFIRA MARCH';
     margin-bottom: 0.5rem;
     text-align: center;
+    
     @media (max-width: 479px) {
     font-size: 1.8rem;
     margin-bottom: 0.1rem;
   }
   @media (min-width: 480px) and (max-width: 767px) {
-    font-size: 2rem;
+    font-size: 2.5rem;
     margin-bottom: 0.2rem;
-    margin-top: -1rem;
+    margin-top: -2.7rem;
   }
   @media (min-width: 768px) and (max-width: 991px) {
-    font-size: 2.7rem;
+    font-size: 3rem;
     margin-bottom: 0.3rem;
+    margin-top: -2.7rem;
   }
   @media (min-width: 992px) and (max-width: 1199px) {
     font-size: 3rem;
     margin-bottom: 0.4rem;
   }
   @media (min-width: 1200px) {
-    font-size: 4.4rem;
-    margin-bottom: 0.5rem;
+    font-size: 4rem;
+    margin-bottom: -0.5rem;
+    margin-top: -2rem;
   }
 `;
 
 const SectionIntro = styled(Typography)`
   && {
     font-size: 2rem;
-    color: #F7B6CF;
-    font-family: 'Didact Gothic', sans-serif;
+    color: #D71768;
+    font-family: 'SAFIRA MARCH';
     margin-bottom: 3rem;
     text-align: center;
     max-width: 600px;
    @media (max-width: 479px) {
-    font-size: 1.5rem;
-    margin-bottom: 0.1rem;
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
   }
   @media (min-width: 480px) and (max-width: 767px) {
     font-size: 1.5rem;
@@ -151,8 +154,8 @@ const SectionIntro = styled(Typography)`
     margin-bottom: 0.4rem;
   }
   @media (min-width: 1200px) {
-    font-size: 3rem;
-    margin-bottom: 0.5rem;
+    font-size: 2.7rem;
+    margin-bottom: 2rem;
   }
   }
 `;
@@ -161,7 +164,7 @@ const CarouselOuter = styled(Box)`
   width: 100%;
   max-width: 1200px;
   position: relative;
-  margin: 0 auto 2.5rem auto;
+  margin: 0 auto -1rem auto;
 `;
 
 const CardsRow = styled(Box)`
@@ -186,14 +189,15 @@ const CardsRow = styled(Box)`
 `;
 
 const ServiceCard = styled(Box)`
-  background: #fff;
+  background: linear-gradient(135deg, #fff 0%, #fefefe 100%);
   border-radius: 1.2rem;
+  border: 2px solid #F7B6CF;
   box-shadow: 0 4px 16px rgba(0,0,0,0.10);
   padding: 2.5rem 2rem 2rem 2rem;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   min-width: ${CARD_WIDTH}px;
   max-width: ${CARD_WIDTH}px;
   min-height: ${CARD_HEIGHT}px;
@@ -201,52 +205,97 @@ const ServiceCard = styled(Box)`
   flex: 0 0 ${CARD_WIDTH}px;
   text-align: center;
   position: relative;
-  transition: box-shadow 0.2s, transform 0.2s;
+  overflow: hidden;
 
-  @media (max-width: 600px) {
-    min-width: 220px;
-    max-width: 220px;
-    min-height: 180px;
-    max-height: 180px;
-    padding: 1.2rem 0.7rem 1rem 0.7rem;
-    border-radius: 0.8rem;
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(247, 182, 207, 0.05) 0%, rgba(215, 23, 104, 0.05) 100%);
+    border-radius: 1.2rem;
+    z-index: 1;
   }
-  @media (max-width: 414px) {
-    min-width: 170px;
-    max-width: 170px;
+
+  & > * {
+    position: relative;
+    z-index: 2;
+  }
+  @media (max-width: 479px) {
+    min-width: 175px;
+    max-width: 175px;
     min-height: 140px;
     max-height: 140px;
-    padding: 0.7rem 0.3rem 0.7rem 0.3rem;
+    padding: 0.7rem 0.3rem 0.5rem 0.5rem;
     border-radius: 0.5rem;
+    margin-left: 0.5rem;
+}
+  @media (min-width: 480px) and (max-width: 767px) {
+    min-width: 230px;
+    max-width: 230px;
+    min-height: 190px;
+    max-height: 190px;
+    padding: 1.2rem 0.7rem 1rem 0.7rem;
+    border-radius: 0.8rem;
+        
+    &::before {
+      border-radius: 0.8rem;
+    }
   }
-  @media (max-width: 340px) {
-    min-width: 120px;
-    max-width: 120px;
-    min-height: 100px;
-    max-height: 100px;
-    padding: 0.4rem 0.1rem 0.4rem 0.1rem;
-    border-radius: 0.3rem;
+
+  @media (min-width: 768px) and (max-width: 991px) {
+    min-width: 250px;
+    max-width: 250px;
+    min-height: 210px;
+    max-height: 210px;
+    padding: 1.2rem 0.7rem 1rem 0.7rem;
+  }
+
+  @media (min-width: 992px) and (max-width: 1199px) {
+    min-width: 270px;
+    max-width: 270px;
+    min-height: 230px;
+    max-height: 230px;
+    padding: 1.2rem 0.7rem 1rem 0.7rem;
+  }
+
+  @media (min-width: 1200px) {
+    min-width: 300px;
+    max-width: 300px;
+    min-height: 250px;
+    max-height: 250px;
+    padding: 1.2rem 0.7rem 1rem 0.7rem;
   }
 `;
 
 const ServiceIcon = styled(Box)`
   color: #D71768;
-  font-size: 2.2rem !important;
-  margin-bottom: 0.5rem;
+  font-size: 2.2rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.8rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  @media (max-width: 600px) {
-    font-size: 1.7rem !important;
-    margin-bottom: 0.7rem;
-  }
-  @media (max-width: 414px) {
-    font-size: 1.2rem !important;
+  height: 2.5rem;
+  @media (max-width: 479px) {
+    font-size: 1rem;
+    margin-top: 0.2rem;
     margin-bottom: 0.4rem;
+    height: 1.2rem;
   }
-  @media (max-width: 340px) {
-    font-size: 1rem !important;
-    margin-bottom: 0.2rem;
+  @media (min-width: 480px) and (max-width: 767px) {
+    font-size: 1.3rem;
+    margin-top: 0.3rem;
+    margin-bottom: 0.5rem;
+    height: 1.5rem;
+  }
+  @media (min-width: 768px) and (max-width: 991px) {
+    font-size: 1.5rem;
+    margin-top: 0.4rem;
+    margin-bottom: 0.6rem;
+    height: 2rem;
   }
 `;
 
@@ -258,20 +307,21 @@ const ServiceTitle = styled(Typography)`
     font-family: 'SAFIRA MARCH', serif;
     margin-bottom: 0.7rem;
     text-align: center;
+    
     @media (max-width: 479px) {
     font-size: 0.8rem;
     margin-bottom: 0.1rem;
   }
   @media (min-width: 480px) and (max-width: 767px) {
-    font-size: 1.1rem;
-    margin-bottom: 0.2rem;
+    font-size: 1rem;
+    margin-bottom: -0.25rem;
   }
   @media (min-width: 768px) and (max-width: 991px) {
-    font-size: 1.3rem;
+    font-size: 1.1rem;
     margin-bottom: 0.3rem;
   }
   @media (min-width: 992px) and (max-width: 1199px) {
-    font-size: 1.3rem;
+    font-size: 1.2rem;
     margin-bottom: 0.4rem;
   }
   @media (min-width: 1200px) {
@@ -286,20 +336,22 @@ const ServiceDesc = styled(Typography)`
     color: #444;
     font-family: 'Didact Gothic', sans-serif;
     text-align: center;
+    line-height: 1.5;
+    
         @media (max-width: 479px) {
     font-size: 0.7rem;
     margin-bottom: 0.1rem;
   }
   @media (min-width: 480px) and (max-width: 767px) {
-    font-size: 1rem;
+    font-size: 0.95rem;
     margin-bottom: 0.2rem;
   }
   @media (min-width: 768px) and (max-width: 991px) {
-    font-size: 1.2rem;
+    font-size: 1rem;
     margin-bottom: 0.3rem;
   }
   @media (min-width: 992px) and (max-width: 1199px) {
-    font-size: 1.3rem;
+    font-size: 1.1rem;
     margin-bottom: 0.4rem;
   }
   @media (min-width: 1200px) {
@@ -327,16 +379,53 @@ const CarouselNav = styled(Box)`
   }
 `;
 
-const CarouselButton = styled(IconButton)`  && {
-    background: #fff;
+const CarouselButton = styled(IconButton)`
+  && {
+    background: linear-gradient(135deg, #fff 0%, #fafafa 100%);
     color: #D71768;
-    border: 1px solid #D71768;
+    border: 2px solid #F7B6CF;
     border-radius: 50%;
-    transition: background 0.2s, color 0.2s;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, #F7B6CF 0%, #D71768 100%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      border-radius: 50%;
+    }
+    
     &:hover {
-      background: #D71768;
+      transform: scale(1.1);
+      border-color: #D71768;
+      box-shadow: 0 4px 16px rgba(215, 23, 104, 0.25);
+      
+      &::before {
+        opacity: 1;
+      }
+    }
+    
+    &:active {
+      transform: scale(0.95);
+    }
+    
+    & > svg {
+      position: relative;
+      z-index: 2;
+      transition: color 0.3s ease;
+    }
+    
+    &:hover > svg {
       color: #fff;
     }
+    
     font-size: 1.5rem;
     box-shadow: 0 2px 8px rgba(0,0,0,0.07);
     @media (max-width: 600px) {

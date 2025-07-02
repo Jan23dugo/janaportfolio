@@ -58,26 +58,27 @@ const Name = styled(Typography)`
       2px 2px 8px rgba(0,0,0,0.35),
       0 0 2px rgb(0, 0, 0);
     @media (max-width: 479px) {
-      font-size: 3rem;
+      font-size: 3.5rem;
     }
     @media (min-width: 480px) and (max-width: 767px) {
-      font-size: 3rem;
-    }
-    @media (min-width: 768px) and (max-width: 991px) {
-      font-size: 3rem;
-    }
-    @media (min-width: 992px) and (max-width: 1199px) {
       font-size: 4.5rem;
     }
+    @media (min-width: 768px) and (max-width: 991px) {
+      font-size: 4.6rem;
+    }
+    @media (min-width: 992px) and (max-width: 1199px) {
+      font-size: 5rem;
+    }
     @media (min-width: 1200px) {
-      font-size: 6.5rem;
+      font-size: 6rem;
+      margin-bottom: -0.5rem !important;
     }
   }
 `;
 
 const Title = styled(Typography)`
   && {
-    font-family: 'Didact Gothic';
+    font-family: 'SAFIRA MARCH';
     font-size: 3.5rem;
     font-weight: 500;
     font-style: italic;
@@ -87,19 +88,19 @@ const Title = styled(Typography)`
     position: relative;
     z-index: 2;
     @media (max-width: 479px) {
-      font-size: 1.5rem;
+      font-size: 2rem;
       margin-bottom: -0.2rem !important;
     }
     @media (min-width: 480px) and (max-width: 767px) {
-      font-size: 1.5rem;
+      font-size: 2.5rem;
       margin-bottom: -0.4rem !important;
     }
     @media (min-width: 768px) and (max-width: 991px) {
-      font-size: 1.5rem;
+      font-size: 2.8em;
       margin-bottom: -0.7rem !important;
     }
     @media (min-width: 992px) and (max-width: 1199px) {
-      font-size: 2.5rem;
+      font-size: 3rem;
       margin-bottom: -1rem !important;
     }
     @media (min-width: 1200px) {
@@ -113,7 +114,7 @@ const Quote = styled(Typography)`
   && {
     font-family: 'Didact Gothic';
     font-size: 1.3rem;
-    color: #F7B6CF;
+    color:#F7B6CF;
     width: 100%;
     text-align: center;
     margin-top: 0.55rem;
@@ -123,7 +124,6 @@ const Quote = styled(Typography)`
     justify-content: center;
 
     span {
-      background-color: #082E04;
       padding: 0.2em 0.7em;
       border-radius: 0.5em;
       display: inline-block;
@@ -132,28 +132,28 @@ const Quote = styled(Typography)`
     }
 
     @media (max-width: 479px) {
-      font-size: 0.8rem;
-      margin-top: 0.1rem;
+      font-size: 0.65rem;
+      margin-top: 1rem;
       padding: 0 0.1rem;
     }
     @media (min-width: 480px) and (max-width: 767px) {
-      font-size: 0.9rem;
-      margin-top: 0.2rem;
+      font-size: 0.75rem;
+      margin-top: 2.7rem;
       padding: 0 0.2rem;
     }
     @media (min-width: 768px) and (max-width: 991px) {
-      font-size: 1rem;
-      margin-top: 0.3rem;
-      padding: 0 0.5rem;
+      font-size: 0.85rem;
+      margin-top: 2rem;
+      padding: 0 0.7rem;
     }
     @media (min-width: 992px) and (max-width: 1199px) {
-      font-size: 1.1rem;
-      margin-top: 0.4rem;
+      font-size: 0.85rem;
+      margin-top: 2rem;
       padding: 0 0.7rem;
     }
     @media (min-width: 1200px) {
-      font-size: 1.3rem;
-      margin-top: 0.55rem;
+      font-size: 1.1rem;
+      margin-top: 2rem;
       padding: 0;
     }
   }
@@ -163,9 +163,10 @@ const Home = () => {
   return (
     <CenterSection>
       <Container maxWidth="md">
+      <Quote variant="body1"><span>"YOU FOCUS ON YOUR BUSINESS. I'LL BUILD YOUR BRAND ONLINE"</span></Quote>
+      <Name variant="h1">Jana Virtuales</Name>
       <Title variant="h5">Social Media Manager</Title>
-        <Name variant="h1">Janna Virtuales</Name>
-        <Quote variant="body1"><span>"YOU FOCUS ON YOUR BUSINESS. I'LL BUILD YOUR BRAND ONLINE"</span></Quote>
+        
       </Container>
     </CenterSection>
   );
