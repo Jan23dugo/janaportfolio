@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Typography, Box, Card, Pagination, Modal } from '@mui/material';
+import { Container, Typography, Box, Card, Pagination, Modal, CircularProgress } from '@mui/material';
 import { motion } from 'framer-motion';
 import styled from 'styled-components';
+import { createClient } from '@supabase/supabase-js';
 
 const ProjectsSection = styled(Box)`
   background:#082E04 ;
@@ -505,11 +506,28 @@ const TabButton = styled.button`
 `;
 
 const Projects = () => {
+  const [projects, setProjects] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [page, setPage] = useState(1);
   const [projectsPerPage, setProjectsPerPage] = useState(6);
   const [openModal, setOpenModal] = useState(false);
   const [modalImage, setModalImage] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [supabase, setSupabase] = useState(null);
+
+  // Initialize Supabase client
+  useEffect(() => {
+    const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
+    const supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY;
+    if (!supabaseUrl || !supabaseAnonKey) {
+      console.error('Supabase configuration missing');
+      setError('Configuration error. Please check your environment variables.');
+      return;
+    }
+    setSupabase(createClient(supabaseUrl, supabaseAnonKey));
+  }, []);
 
   useEffect(() => {
     const handleResize = () => {
@@ -530,6 +548,70 @@ const Projects = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  useEffect(() => {
+    if (supabase) {
+      loadProjects();
+    }
+  }, [supabase]);
+
+  // Helper function to get Supabase storage URL
+  const getImageUrl = (imagePath) => {
+    if (!supabase || !imagePath) return 'https://via.placeholder.com/300x200?text=No+Image';
+    
+    // If it's already a full URL, return as is
+    if (imagePath.startsWith('http')) return imagePath;
+    
+    // If it's a local asset path (starts with /assets), return as is
+    if (imagePath.startsWith('/assets')) return imagePath;
+    
+    // Get the public URL from Supabase storage
+    const { data } = supabase.storage
+      .from('project-images')
+      .getPublicUrl(imagePath);
+    
+    return data?.publicUrl || 'https://via.placeholder.com/300x200?text=No+Image';
+  };
+
+  const loadProjects = async () => {
+    if (!supabase) return;
+    
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Fetch projects and categories from Supabase
+      const [projectsResponse, categoriesResponse] = await Promise.all([
+        supabase
+          .from('projects')
+          .select('*')
+          .eq('is_active', true)
+          .order('display_order', { ascending: true }),
+        supabase
+          .from('project_categories')
+          .select('*')
+          .eq('is_active', true)
+          .order('name', { ascending: true })
+      ]);
+      
+      if (projectsResponse.error) throw projectsResponse.error;
+      if (categoriesResponse.error) throw categoriesResponse.error;
+      
+      console.log('Fetched projects for public view:', projectsResponse.data);
+      console.log('Fetched categories for public view:', categoriesResponse.data);
+      
+      setProjects(projectsResponse.data || []);
+      setCategories(categoriesResponse.data || []);
+    } catch (error) {
+      console.error('Error loading projects:', error);
+      setError('Failed to load projects. Please try again later.');
+      // Fallback to empty arrays
+      setProjects([]);
+      setCategories([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleCategoryChange = (category) => {
     setSelectedCategory(category);
     setPage(1);
@@ -544,6 +626,9 @@ const Projects = () => {
     setOpenModal(true);
   };
 
+  // Get unique categories from projects and add "All" option
+  const availableCategories = ['All', ...new Set(projects.map(project => project.category))];
+
   const filteredProjects =
     selectedCategory === 'All'
       ? projects
@@ -554,6 +639,35 @@ const Projects = () => {
     (page - 1) * projectsPerPage,
     page * projectsPerPage
   );
+
+  if (loading) {
+    return (
+      <ProjectsSection>
+        <GalleryContainer>
+          <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+            <CircularProgress size={60} sx={{ color: '#F7B6CF' }} />
+          </Box>
+        </GalleryContainer>
+      </ProjectsSection>
+    );
+  }
+
+  if (error) {
+    return (
+      <ProjectsSection>
+        <GalleryContainer>
+          <Box textAlign="center" py={8}>
+            <Typography variant="h6" color="error" gutterBottom>
+              {error}
+            </Typography>
+            <Typography variant="body1" color="textSecondary">
+              Please check your connection and try again.
+            </Typography>
+          </Box>
+        </GalleryContainer>
+      </ProjectsSection>
+    );
+  }
 
   return (
     <ProjectsSection>
@@ -567,175 +681,196 @@ const Projects = () => {
             My Projects
           </ProjectsTitle>
 
-          <TabContainer>
-            {categories.map((category) => (
-              <TabButton
-                key={category}
-                active={selectedCategory === category}
-                data-active={selectedCategory === category}
-                onClick={() => handleCategoryChange(category)}
-              >
-                <span>{category}</span>
-              </TabButton>
-            ))}
-          </TabContainer>
+          {availableCategories.length > 1 && (
+            <TabContainer>
+              {availableCategories.map((category) => (
+                <TabButton
+                  key={category}
+                  active={selectedCategory === category}
+                  data-active={selectedCategory === category}
+                  onClick={() => handleCategoryChange(category)}
+                >
+                  <span>{category}</span>
+                </TabButton>
+              ))}
+            </TabContainer>
+          )}
 
-          <ProjectsGrid>
-            {paginatedProjects.map((project, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                style={{ width: '100%', height: '100%' }}
+          {paginatedProjects.length > 0 ? (
+            <>
+              <ProjectsGrid>
+                {paginatedProjects.map((project, index) => (
+                  <motion.div
+                    key={project.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                    style={{ width: '100%', height: '100%' }}
+                  >
+                    <ProjectCard>
+                      <ProjectImage
+                        src={getImageUrl(project.image_path)}
+                        alt={project.title}
+                        onClick={() => handleImageClick(getImageUrl(project.image_path))}
+                        style={{ cursor: 'pointer' }}
+                        onError={(e) => {
+                          e.target.src = 'https://via.placeholder.com/300x200?text=No+Image';
+                        }}
+                      />
+                    </ProjectCard>
+                  </motion.div>
+                ))}
+              </ProjectsGrid>
+
+              <Modal
+                open={openModal}
+                onClose={() => setOpenModal(false)}
+                sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
               >
-                <ProjectCard>
-                  <ProjectImage
-                    src={project.image}
-                    alt={project.title}
-                    onClick={() => handleImageClick(project.image)}
-                    style={{ cursor: 'pointer' }}
+                <Box
+                  sx={{
+                    outline: 'none',
+                    maxWidth: '90vw',
+                    maxHeight: '90vh',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    bgcolor: 'background.paper',
+                    borderRadius: 2,
+                    boxShadow: 24,
+                    p: 1,
+                  }}
+                >
+                  <img
+                    src={modalImage}
+                    alt="Full Size"
+                    style={{ maxWidth: '100%', maxHeight: '80vh', borderRadius: '8px' }}
                   />
-                </ProjectCard>
-              </motion.div>
-            ))}
-          </ProjectsGrid>
+                </Box>
+              </Modal>
 
-          <Modal
-            open={openModal}
-            onClose={() => setOpenModal(false)}
-            sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-          >
-            <Box
-              sx={{
-                outline: 'none',
-                maxWidth: '90vw',
-                maxHeight: '90vh',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                bgcolor: 'background.paper',
-                borderRadius: 2,
-                boxShadow: 24,
-                p: 1,
-              }}
-            >
-              <img
-                src={modalImage}
-                alt="Full Size"
-                style={{ maxWidth: '100%', maxHeight: '80vh', borderRadius: '8px' }}
-              />
-            </Box>
-          </Modal>
-
-          {pageCount > 1 && (
-            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-              <Pagination
-                count={pageCount}
-                page={page}
-                onChange={handlePageChange}
-                color="primary"
-                shape="rounded"
-                siblingCount={1}
-                boundaryCount={1}
-                sx={{
-                  '& .MuiPaginationItem-root': {
-                    color: '#D71768',
-                    fontWeight: 600,
-                    fontFamily: 'Didact Gothic, sans-serif',
-                    fontSize: '1rem',
-                    margin: '0 0.3rem',
-                    minWidth: '40px',
-                    height: '40px',
-                    borderRadius: '20px',
-                    border: '2px solid #F7B6CF',
-                    background: 'linear-gradient(135deg, #fff 0%, #f8f9fa 100%)',
-                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
-                    '&:hover': {
-                      background: 'linear-gradient(135deg, #D71768 0%, #F7B6CF 100%)',
-                      color: '#fff',
-                      borderColor: '#D71768',
-                      transform: 'translateY(-2px)',
-                      boxShadow: '0 4px 16px rgba(247, 182, 207, 0.25)',
-                    },
-                    '&.Mui-disabled': {
-                      background: 'linear-gradient(135deg, #f1f3f4 0%, #e8eaed 100%)',
-                      color: '#9aa0a6',
-                      borderColor: '#e8eaed',
-                      opacity: 0.6,
-                    }
-                  },
-                  '& .Mui-selected': {
-                    backgroundColor: 'transparent !important',
-                    background: 'linear-gradient(135deg, #D71768 0%, #F7B6CF 100%) !important',
-                    color: '#fff !important',
-                    borderColor: '#D71768 !important',
-                    boxShadow: '0 4px 16px rgba(215, 23, 104, 0.25) !important',
-                    '&:hover': {
-                      background: 'linear-gradient(135deg, #D71768 0%, #F7B6CF 100%) !important',
-                      transform: 'translateY(-1px)',
-                      boxShadow: '0 6px 20px rgba(215, 23, 104, 0.35) !important',
-                    }
-                  },
-                  '& .MuiPaginationItem-previousNext': {
-                    borderRadius: '20px',
-                    minWidth: '40px',
-                    fontSize: '1.1rem',
-                    '& .MuiSvgIcon-root': {
-                      fontSize: '1.2rem',
-                    }
-                  },
-                  '@media (max-width: 479px)': {
-                    '& .MuiPaginationItem-root': {
-                      minWidth: '32px',
-                      height: '32px',
-                      fontSize: '0.85rem',
-                      margin: '0 0.2rem',
-                      borderRadius: '16px',
-                    },
-                    '& .MuiPaginationItem-previousNext': {
-                      borderRadius: '16px',
-                      minWidth: '32px',
-                      '& .MuiSvgIcon-root': {
+              {pageCount > 1 && (
+                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+                  <Pagination
+                    count={pageCount}
+                    page={page}
+                    onChange={handlePageChange}
+                    color="primary"
+                    shape="rounded"
+                    siblingCount={1}
+                    boundaryCount={1}
+                    sx={{
+                      '& .MuiPaginationItem-root': {
+                        color: '#D71768',
+                        fontWeight: 600,
+                        fontFamily: 'Didact Gothic, sans-serif',
                         fontSize: '1rem',
-                      }
-                    }
-                  },
-                  '@media (min-width: 480px) and (max-width: 767px)': {
-                    '& .MuiPaginationItem-root': {
-                      minWidth: '36px',
-                      height: '36px',
-                      fontSize: '0.9rem',
-                      margin: '0 0.25rem',
-                      borderRadius: '18px',
-                    },
-                    '& .MuiPaginationItem-previousNext': {
-                      borderRadius: '18px',
-                      minWidth: '36px',
-                      '& .MuiSvgIcon-root': {
+                        margin: '0 0.3rem',
+                        minWidth: '40px',
+                        height: '40px',
+                        borderRadius: '20px',
+                        border: '2px solid #F7B6CF',
+                        background: 'linear-gradient(135deg, #fff 0%, #f8f9fa 100%)',
+                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+                        '&:hover': {
+                          background: 'linear-gradient(135deg, #D71768 0%, #F7B6CF 100%)',
+                          color: '#fff',
+                          borderColor: '#D71768',
+                          transform: 'translateY(-2px)',
+                          boxShadow: '0 4px 16px rgba(247, 182, 207, 0.25)',
+                        },
+                        '&.Mui-disabled': {
+                          background: 'linear-gradient(135deg, #f1f3f4 0%, #e8eaed 100%)',
+                          color: '#9aa0a6',
+                          borderColor: '#e8eaed',
+                          opacity: 0.6,
+                        }
+                      },
+                      '& .Mui-selected': {
+                        backgroundColor: 'transparent !important',
+                        background: 'linear-gradient(135deg, #D71768 0%, #F7B6CF 100%) !important',
+                        color: '#fff !important',
+                        borderColor: '#D71768 !important',
+                        boxShadow: '0 4px 16px rgba(215, 23, 104, 0.25) !important',
+                        '&:hover': {
+                          background: 'linear-gradient(135deg, #D71768 0%, #F7B6CF 100%) !important',
+                          transform: 'translateY(-1px)',
+                          boxShadow: '0 6px 20px rgba(215, 23, 104, 0.35) !important',
+                        }
+                      },
+                      '& .MuiPaginationItem-previousNext': {
+                        borderRadius: '20px',
+                        minWidth: '40px',
                         fontSize: '1.1rem',
+                        '& .MuiSvgIcon-root': {
+                          fontSize: '1.2rem',
+                        }
+                      },
+                      '@media (max-width: 479px)': {
+                        '& .MuiPaginationItem-root': {
+                          minWidth: '32px',
+                          height: '32px',
+                          fontSize: '0.85rem',
+                          margin: '0 0.2rem',
+                          borderRadius: '16px',
+                        },
+                        '& .MuiPaginationItem-previousNext': {
+                          borderRadius: '16px',
+                          minWidth: '32px',
+                          '& .MuiSvgIcon-root': {
+                            fontSize: '1rem',
+                          }
+                        }
+                      },
+                      '@media (min-width: 480px) and (max-width: 767px)': {
+                        '& .MuiPaginationItem-root': {
+                          minWidth: '36px',
+                          height: '36px',
+                          fontSize: '0.9rem',
+                          margin: '0 0.25rem',
+                          borderRadius: '18px',
+                        },
+                        '& .MuiPaginationItem-previousNext': {
+                          borderRadius: '18px',
+                          minWidth: '36px',
+                          '& .MuiSvgIcon-root': {
+                            fontSize: '1.1rem',
+                          }
+                        }
+                      },
+                      '@media (min-width: 768px) and (max-width: 991px)': {
+                        '& .MuiPaginationItem-root': {
+                          minWidth: '38px',
+                          height: '38px',
+                          fontSize: '0.95rem',
+                          margin: '0 0.28rem',
+                          borderRadius: '19px',
+                        },
+                        '& .MuiPaginationItem-previousNext': {
+                          borderRadius: '19px',
+                          minWidth: '38px',
+                          '& .MuiSvgIcon-root': {
+                            fontSize: '1.15rem',
+                          }
+                        }
                       }
-                    }
-                  },
-                  '@media (min-width: 768px) and (max-width: 991px)': {
-                    '& .MuiPaginationItem-root': {
-                      minWidth: '38px',
-                      height: '38px',
-                      fontSize: '0.95rem',
-                      margin: '0 0.28rem',
-                      borderRadius: '19px',
-                    },
-                    '& .MuiPaginationItem-previousNext': {
-                      borderRadius: '19px',
-                      minWidth: '38px',
-                      '& .MuiSvgIcon-root': {
-                        fontSize: '1.15rem',
-                      }
-                    }
-                  }
-                }}
-              />
+                    }}
+                  />
+                </Box>
+              )}
+            </>
+          ) : (
+            <Box textAlign="center" py={8}>
+              <Typography variant="h6" color="textSecondary" gutterBottom>
+                No projects found
+              </Typography>
+              <Typography variant="body1" color="textSecondary">
+                {selectedCategory === 'All' 
+                  ? 'No projects are currently available.' 
+                  : `No projects found in the "${selectedCategory}" category.`
+                }
+              </Typography>
             </Box>
           )}
         </motion.div>

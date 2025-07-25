@@ -1,24 +1,13 @@
-import React, { useState } from 'react';
-import { Container, Typography, Box, Modal, IconButton } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Container, Typography, Box, Modal, IconButton, CircularProgress } from '@mui/material';
 import styled from 'styled-components';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import CloseIcon from '@mui/icons-material/Close';
+import { createClient } from '@supabase/supabase-js';
 
-const results = [
-  {
-    before: '/assets/Results/BEFORE (1).png',
-    after: '/assets/Results/AFTER (1).png',
-  },
-  {
-    before: '/assets/Results/BEFORE (3).png',
-    after: '/assets/Results/AFTER (3).png',
-  },
-  {
-    before: '/assets/Results/BEFORE (2).png',
-    after: '/assets/Results/AFTER (2).png',
-  },
-
-];
+const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
+const supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY;
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 const ResultsSection = styled(Box)`
   background: #D9E4D7;
@@ -341,8 +330,42 @@ const ResultsTitle = styled(Typography)`
 `;
 
 const Results = () => {
+  const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [openModal, setOpenModal] = useState(false);
   const [modalImage, setModalImage] = useState(null);
+
+  useEffect(() => {
+    fetchResults();
+  }, []);
+
+  const fetchResults = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('results')
+        .select('*')
+        .eq('is_active', true)
+        .order('display_order', { ascending: true });
+      if (error) throw error;
+      setResults(data);
+      setError(null);
+    } catch (err) {
+      console.error('Error fetching results:', err);
+      setError('Failed to load results');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Helper function to get image URL
+  const getImageUrl = (imagePath) => {
+    if (!imagePath) return '';
+    if (imagePath.startsWith('http')) return imagePath;
+    if (imagePath.startsWith('/assets')) return imagePath;
+    return `${supabaseUrl}/storage/v1/object/public/results-images/${imagePath}`;
+  };
 
   const handleImageClick = (imageUrl) => {
     setModalImage(imageUrl);
@@ -361,33 +384,55 @@ const Results = () => {
           Results
         </ResultsTitle>
         
-        <ResultsGrid>
-          {results.map((result, index) => (
-            <ResultCard key={index}>
-              <ImageContainer>
-                <Label>Before</Label>
-                <ResultImage 
-                  src={result.before} 
-                  alt={`Before result ${index + 1}`}
-                  onClick={() => handleImageClick(result.before)}
-                />
-              </ImageContainer>
-              
-              <ArrowSeparator>
-                <ArrowForwardIcon fontSize="large" />
-              </ArrowSeparator>
-              
-              <ImageContainer>
-                <Label>After</Label>
-                <ResultImage 
-                  src={result.after} 
-                  alt={`After result ${index + 1}`}
-                  onClick={() => handleImageClick(result.after)}
-                />
-              </ImageContainer>
-            </ResultCard>
-          ))}
-        </ResultsGrid>
+        {loading && (
+          <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
+            <CircularProgress />
+          </Box>
+        )}
+        
+        {error && (
+          <Box textAlign="center" py={4}>
+            <Typography color="error" variant="body1">
+              {error}
+            </Typography>
+          </Box>
+        )}
+        
+        {!loading && !error && (
+          <ResultsGrid>
+            {results.map((result, index) => (
+              <ResultCard key={result.id || index}>
+                <ImageContainer>
+                  <Label>Before</Label>
+                  <ResultImage 
+                    src={getImageUrl(result.before_image)} 
+                    alt={`Before ${result.title || `result ${index + 1}`}`}
+                    onClick={() => handleImageClick(getImageUrl(result.before_image))}
+                    onError={(e) => {
+                      e.target.src = 'https://via.placeholder.com/300x300?text=Before';
+                    }}
+                  />
+                </ImageContainer>
+                
+                <ArrowSeparator>
+                  <ArrowForwardIcon fontSize="large" />
+                </ArrowSeparator>
+                
+                <ImageContainer>
+                  <Label>After</Label>
+                  <ResultImage 
+                    src={getImageUrl(result.after_image)} 
+                    alt={`After ${result.title || `result ${index + 1}`}`}
+                    onClick={() => handleImageClick(getImageUrl(result.after_image))}
+                    onError={(e) => {
+                      e.target.src = 'https://via.placeholder.com/300x300?text=After';
+                    }}
+                  />
+                </ImageContainer>
+              </ResultCard>
+            ))}
+          </ResultsGrid>
+        )}
         
         <Modal
           open={openModal}

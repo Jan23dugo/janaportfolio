@@ -1,8 +1,9 @@
-import React from 'react';
-import { Container, Typography, Box } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Container, Typography, Box, CircularProgress, Alert } from '@mui/material';
 import styled from 'styled-components';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Pagination } from 'swiper/modules';
+import { createClient } from '@supabase/supabase-js';
 import 'swiper/css';
 import 'swiper/css/pagination';
 
@@ -292,72 +293,26 @@ const DesktopToolsGrid = styled.div`
   }
 `;
 
-const tools = [
-  {
-    name: 'Canva',
-    iconSrc: '/assets/Tools/canva-logo.png'
-  },
-  {
-    name: 'Capcut',
-    iconSrc: '/assets/Tools/capcut-logo.png'
-  },
-  {
-    name: 'Inshot',
-    iconSrc: '/assets/Tools/inshot-logo.png'
-  },
-  {
-    name: 'Freepik',
-    iconSrc: '/assets/Tools/freepik-logo.png'
-  },
-  {
-    name: 'Pixabay',
-    iconSrc: '/assets/Tools/pixabay-logo.png'
-  },
-  {
-    name: 'Notion',
-    iconSrc: '/assets/Tools/notion-logo.png'
-  },
-  {
-    name: 'Trello',
-    iconSrc: '/assets/Tools/trelo-logo.png'
-  },
-  {
-    name: 'Asana',
-    iconSrc: '/assets/Tools/asana-logo.png'
-  },
-  {
-    name: 'Metricool',
-    iconSrc: '/assets/Tools/metricool-logo.png'
-  },
-  {
-    name: 'Meta Business Suite',
-    iconSrc: '/assets/Tools/Meta-logo.png'
-  },
-  {
-    name: 'GDocs',
-    iconSrc: '/assets/Tools/gdoc-logo.png'
-  },
-  {
-    name: 'Google Sheets',
-    iconSrc: '/assets/Tools/gsheets-logo.png'
-  },
-  {
-    name: 'ChatGPT',
-    iconSrc: '/assets/Tools/chatgpt-logo.png'
-  },
-  {
-    name: 'Facebook',
-    iconSrc: '/assets/Tools/facebook-logo.png'
-  },
-  {
-    name: 'Instagram',
-    iconSrc: '/assets/Tools/instagram-logo.png'
-  },
-  {
-    name: 'Tiktok',
-    iconSrc: '/assets/Tools/tiktok-logo.png'
-  }
-];
+const LoadingContainer = styled(Box)`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  position: relative;
+  z-index: 2;
+`;
+
+const ErrorContainer = styled(Box)`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  position: relative;
+  z-index: 2;
+  padding: 2rem;
+`;
 
 // Create chunks of 8 tools for mobile slides (2 rows x 4 icons)
 const createMobileSlides = (toolsArray) => {
@@ -369,8 +324,73 @@ const createMobileSlides = (toolsArray) => {
 };
 
 const Tools = () => {
+  const [tools, setTools] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchTools = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
+        const supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY;
+        if (!supabaseUrl || !supabaseAnonKey) {
+          throw new Error('Supabase configuration missing');
+        }
+        const supabase = createClient(supabaseUrl, supabaseAnonKey);
+        const { data, error: supabaseError } = await supabase
+          .from('tools')
+          .select('*')
+          .order('sort_order', { ascending: true });
+        if (supabaseError) throw supabaseError;
+        setTools(data || []);
+      } catch (err) {
+        console.error('Error fetching tools:', err);
+        setError('Failed to load tools.');
+        setTools([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchTools();
+  }, []);
+
+  // Helper to get icon URL
+  const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
+  const getIconUrl = (icon_filename) => {
+    if (!icon_filename) return 'https://via.placeholder.com/40x40?text=No+Icon';
+    if (icon_filename.startsWith('http')) return icon_filename;
+    return `${supabaseUrl}/storage/v1/object/public/tools-images/${icon_filename}`;
+  };
+
   const mobileSlides = createMobileSlides(tools);
-  
+
+  if (loading) {
+    return (
+      <ToolsSection id="tools">
+        <LoadingContainer>
+          <CircularProgress size={60} sx={{ color: '#D71768', mb: 2 }} />
+          <Typography variant="h6" sx={{ color: '#F7B6CF' }}>
+            Loading...
+          </Typography>
+        </LoadingContainer>
+      </ToolsSection>
+    );
+  }
+
+  if (error) {
+    return (
+      <ToolsSection id="tools">
+        <ErrorContainer>
+          <Alert severity="warning" sx={{ mb: 2 }}>
+            {error}
+          </Alert>
+        </ErrorContainer>
+      </ToolsSection>
+    );
+  }
+
   return (
     <ToolsSection id="tools">
       <Container maxWidth="xl" sx={{ padding: '0 1rem', overflow: 'hidden' }}>
@@ -380,7 +400,6 @@ const Tools = () => {
         <SubHeading>
           The essential tools I use to deliver exceptional results
         </SubHeading>
-        
         {/* Mobile Swiper (max-width: 479px) */}
         <MobileSwiperContainer>
           <Swiper
@@ -406,7 +425,7 @@ const Tools = () => {
                       <ToolIcon>
                         <div 
                           className="brand-logo"
-                          style={{ backgroundImage: `url(${tool.iconSrc})` }}
+                          style={{ backgroundImage: `url(${getIconUrl(tool.icon_filename)})` }}
                         />
                       </ToolIcon>
                       <ToolName variant="h6" className="tool-name">
@@ -419,7 +438,6 @@ const Tools = () => {
             ))}
           </Swiper>
         </MobileSwiperContainer>
-        
         {/* Desktop Grid (min-width: 480px) */}
         <DesktopToolsGrid>
           {tools.map((tool, index) => (
@@ -427,7 +445,7 @@ const Tools = () => {
               <ToolIcon>
                 <div 
                   className="brand-logo"
-                  style={{ backgroundImage: `url(${tool.iconSrc})` }}
+                  style={{ backgroundImage: `url(${getIconUrl(tool.icon_filename)})` }}
                 />
               </ToolIcon>
               <ToolName variant="h6" className="tool-name">

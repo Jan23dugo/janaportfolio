@@ -159,7 +159,7 @@ const Navbar = () => {
             </>
           ) : (
             <>
-              <Logo>Janna Virtuales</Logo>
+              <Logo>Jana Virtuales</Logo>
               <div style={{ 
                 marginLeft: 'auto', 
                 display: 'flex', 

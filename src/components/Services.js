@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { Typography, Box, IconButton, LinearProgress } from '@mui/material';
+import { Typography, Box, IconButton, LinearProgress, CircularProgress, Alert } from '@mui/material';
 import styled from 'styled-components';
 import LaptopMacIcon from '@mui/icons-material/LaptopMac';
 import InsightsIcon from '@mui/icons-material/Insights';
@@ -14,6 +14,22 @@ import ForumIcon from '@mui/icons-material/Forum';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import { createClient } from '@supabase/supabase-js';
+
+// Map of icon names to components
+const iconMap = {
+  'LaptopMac': <LaptopMacIcon fontSize="inherit" />,
+  'Insights': <InsightsIcon fontSize="inherit" />,
+  'Search': <SearchIcon fontSize="inherit" />,
+  'Tune': <TuneIcon fontSize="inherit" />,
+  'EventNote': <EventNoteIcon fontSize="inherit" />,
+  'VideoLibrary': <VideoLibraryIcon fontSize="inherit" />,
+  'Brush': <BrushIcon fontSize="inherit" />,
+  'EditNote': <EditNoteIcon fontSize="inherit" />,
+  'Schedule': <ScheduleIcon fontSize="inherit" />,
+  'Forum': <ForumIcon fontSize="inherit" />,
+  'BarChart': <BarChartIcon fontSize="inherit" />
+};
 
 const servicesData = [
   {
@@ -464,10 +480,76 @@ const ProgressBarWrapper = styled(Box)`
   }
 `;
 
+const LoadingContainer = styled(Box)`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  position: relative;
+  z-index: 2;
+`;
+
+const ErrorContainer = styled(Box)`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  position: relative;
+  z-index: 2;
+  padding: 2rem;
+`;
+
 const Services = () => {
   const rowRef = useRef();
   const [scroll, setScroll] = useState(0);
   const [maxScroll, setMaxScroll] = useState(1);
+  const [services, setServices] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // Initialize Supabase client
+        const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
+        const supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY;
+        
+        if (!supabaseUrl || !supabaseAnonKey) {
+          throw new Error('Supabase configuration missing');
+        }
+        
+        const supabase = createClient(supabaseUrl, supabaseAnonKey);
+        
+        // Fetch from Supabase
+        const { data, error: supabaseError } = await supabase
+          .from('services')
+          .select('*')
+          .order('display_order', { ascending: true })
+          .eq('is_active', true);
+        
+        if (supabaseError) {
+          throw supabaseError;
+        }
+        
+        // Update services with fetched data, keeping defaults if data is empty
+        setServices(data?.length ? data : servicesData);
+        
+      } catch (err) {
+        console.error('Error fetching services:', err);
+        setError('Failed to load services. Using default values.');
+        setServices(servicesData);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchServices();
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -481,7 +563,7 @@ const Services = () => {
       setMaxScroll(row.scrollWidth - row.clientWidth);
     }
     return () => row && row.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [services]); // Added services as dependency since card width affects scroll
 
   // Scroll by one card
   const scrollByCard = (dir) => {
@@ -492,19 +574,41 @@ const Services = () => {
 
   const progress = maxScroll > 0 ? (scroll / maxScroll) * 100 : 0;
 
+  if (loading) {
+    return (
+      <ServicesSection>
+        <LoadingContainer>
+          <CircularProgress size={60} sx={{ color: '#D71768', mb: 2 }} />
+          <Typography variant="h6" sx={{ color: '#D71768' }}>
+            Loading...
+          </Typography>
+        </LoadingContainer>
+      </ServicesSection>
+    );
+  }
+
   return (
     <ServicesSection>
       <SectionTitle>My Service Inclusions</SectionTitle>
       <SectionIntro>
-      HOW CAN I HELP?
+        HOW CAN I HELP?
       </SectionIntro>
+      {error && (
+        <ErrorContainer>
+          <Alert severity="warning" sx={{ mb: 2 }}>
+            {error}
+          </Alert>
+        </ErrorContainer>
+      )}
       <CarouselOuter>
         <CardsRow ref={rowRef}>
-          {servicesData.map((service, idx) => (
+          {services.map((service, idx) => (
             <ServiceCard key={idx}>
-              <ServiceIcon>{service.icon}</ServiceIcon>
+              <ServiceIcon>
+                {iconMap[service.icon_name] || iconMap['LaptopMac']}
+              </ServiceIcon>
               <ServiceTitle>{service.title}</ServiceTitle>
-              <ServiceDesc>{service.desc}</ServiceDesc>
+              <ServiceDesc>{service.description}</ServiceDesc>
             </ServiceCard>
           ))}
         </CardsRow>
@@ -517,7 +621,18 @@ const Services = () => {
           </CarouselButton>
         </CarouselNav>
         <ProgressBarWrapper>
-          <LinearProgress variant="determinate" value={progress} sx={{ height: 4, borderRadius: 2, background: '#eee', '& .MuiLinearProgress-bar': { background: '#D71768' } }} />
+          <LinearProgress 
+            variant="determinate" 
+            value={progress} 
+            sx={{ 
+              height: 4, 
+              borderRadius: 2, 
+              background: '#eee', 
+              '& .MuiLinearProgress-bar': { 
+                background: '#D71768' 
+              } 
+            }} 
+          />
         </ProgressBarWrapper>
       </CarouselOuter>
     </ServicesSection>

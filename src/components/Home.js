@@ -1,11 +1,15 @@
-import React from 'react';
-import { Container, Typography, Box } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Container, Typography, Box, CircularProgress, Alert } from '@mui/material';
 import styled from 'styled-components';
 import homebg from '../assets/Homebackground/homebg.jpg';
+import { createClient } from '@supabase/supabase-js';
 
 const CenterSection = styled(Box)`
   min-height: 100vh;
-  background: url(${homebg}) no-repeat center center;
+  background: ${props => props.$backgroundImage 
+    ? `url(${props.$backgroundImage}) no-repeat center center`
+    : `url(${homebg}) no-repeat center center`
+  };
   background-size: cover;
   display: flex;
   align-items: center;
@@ -42,6 +46,27 @@ const CenterSection = styled(Box)`
     background: rgba(8, 46, 4, 0.45);
     z-index: 1;
   }
+`;
+
+const LoadingContainer = styled(Box)`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  position: relative;
+  z-index: 2;
+`;
+
+const ErrorContainer = styled(Box)`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  position: relative;
+  z-index: 2;
+  padding: 2rem;
 `;
 
 const Name = styled(Typography)`
@@ -160,13 +185,104 @@ const Quote = styled(Typography)`
 `;
 
 const Home = () => {
-  return (
-    <CenterSection>
-      <Container maxWidth="md">
-      <Quote variant="body1"><span>"YOU FOCUS ON YOUR BUSINESS. I'LL BUILD YOUR BRAND ONLINE"</span></Quote>
-      <Name variant="h1">Jana Virtuales</Name>
-      <Title variant="h5">Social Media Manager</Title>
+  const [content, setContent] = useState({
+    quote: "YOU FOCUS ON YOUR BUSINESS. I'LL BUILD YOUR BRAND ONLINE",
+    name: "Jana Virtuales",
+    title: "Social Media Manager",
+    background_image: ""
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchHomeContent = async () => {
+      try {
+        setLoading(true);
+        setError(null);
         
+        // Initialize Supabase client
+        const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
+        const supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY;
+        
+        if (!supabaseUrl || !supabaseAnonKey) {
+          throw new Error('Supabase configuration missing');
+        }
+        
+        const supabase = createClient(supabaseUrl, supabaseAnonKey);
+        
+        // Fetch from Supabase
+        const { data, error: supabaseError } = await supabase
+          .from('home_content')
+          .select('*')
+          .single();
+        
+        if (supabaseError) {
+          throw supabaseError;
+        }
+        
+        // Update content with fetched data, keeping defaults if data is empty
+        setContent({
+          quote: data.quote || "YOU FOCUS ON YOUR BUSINESS. I'LL BUILD YOUR BRAND ONLINE",
+          name: data.name || "Jana Virtuales",
+          title: data.title || "Social Media Manager",
+          background_image: data.background_image || "homebg.jpg"
+        });
+        
+      } catch (err) {
+        console.error('Error fetching home content:', err);
+        setError('Failed to load content. Using default values.');
+        
+        // Keep default values on error
+        setContent({
+          quote: "YOU FOCUS ON YOUR BUSINESS. I'LL BUILD YOUR BRAND ONLINE",
+          name: "Jana Virtuales",
+          title: "Social Media Manager",
+          background_image: "homebg.jpg"
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchHomeContent();
+  }, []);
+
+  // Construct background image URL
+  const backgroundImageUrl = content.background_image 
+    ? content.background_image.includes('-') && content.background_image.includes('.')
+      ? `${process.env.REACT_APP_SUPABASE_URL}/storage/v1/object/public/home-backgrounds/${content.background_image}`
+      : `/assets/Homebackground/${content.background_image}`
+    : null;
+
+  if (loading) {
+    return (
+      <CenterSection>
+        <LoadingContainer>
+          <CircularProgress size={60} sx={{ color: '#D71768', mb: 2 }} />
+          <Typography variant="h6" sx={{ color: '#F7B6CF' }}>
+            Loading...
+          </Typography>
+        </LoadingContainer>
+      </CenterSection>
+    );
+  }
+
+  return (
+    <CenterSection $backgroundImage={backgroundImageUrl}>
+      <Container maxWidth="md">
+        {error && (
+          <ErrorContainer>
+            <Alert severity="warning" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          </ErrorContainer>
+        )}
+        
+        <Quote variant="body1">
+          <span>"{content.quote}"</span>
+        </Quote>
+        <Name variant="h1">{content.name}</Name>
+        <Title variant="h5">{content.title}</Title>
       </Container>
     </CenterSection>
   );

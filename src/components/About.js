@@ -1,7 +1,8 @@
-import React from 'react';
-import { Typography, Box } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Typography, Box, CircularProgress, Alert } from '@mui/material';
 import styled, { css } from 'styled-components';
 import profileImg from '../assets/Aboutbackground/aboutpic.png';
+import { createClient } from '@supabase/supabase-js';
 
 const AboutSection = styled(Box)`
   
@@ -500,37 +501,145 @@ const responsiveH5 = css`
   }
 `;
 
+const LoadingContainer = styled(Box)`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  position: relative;
+  z-index: 2;
+`;
+
+const ErrorContainer = styled(Box)`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  position: relative;
+  z-index: 2;
+  padding: 2rem;
+`;
+
 const About = () => {
+  const [content, setContent] = useState({
+    headline: "I'm a self-driven Social Media Manager helping beauty, health, and wellness brands rise above the noise and attract the right clients!",
+    subheadline: "From content that connects to growth tactics that actually work, everything I do is guided by one goal: to help your business grow with purpose without you wasting time and effort.",
+    profile_image: "aboutpic.png",
+    honest_title: "Let's Be Honest...",
+    honest_text_1: "Running your business is overwhelming. You can't do everything all at once, and the sooner you realize that, the better.",
+    honest_text_2: "Building your social media takes time, strategy, and consistency. Without the right help, you're leaving growth, visibility, and potential clients on the table.",
+    honest_text_3: "You don't have to do it all. You just need the right support. It's time to move smart."
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchAboutContent = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // Initialize Supabase client
+        const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
+        const supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY;
+        
+        if (!supabaseUrl || !supabaseAnonKey) {
+          throw new Error('Supabase configuration missing');
+        }
+        
+        const supabase = createClient(supabaseUrl, supabaseAnonKey);
+        
+        // Fetch from Supabase
+        const { data, error: supabaseError } = await supabase
+          .from('about_content')
+          .select('*')
+          .single();
+        
+        if (supabaseError) {
+          throw supabaseError;
+        }
+        
+        // Update content with fetched data, keeping defaults if data is empty
+        setContent({
+          headline: data.headline || "I'm a self-driven Social Media Manager helping beauty, health, and wellness brands rise above the noise and attract the right clients!",
+          subheadline: data.subheadline || "From content that connects to growth tactics that actually work, everything I do is guided by one goal: to help your business grow with purpose without you wasting time and effort.",
+          profile_image: data.profile_image || "aboutpic.png",
+          honest_title: data.honest_title || "Let's Be Honest...",
+          honest_text_1: data.honest_text_1 || "Running your business is overwhelming. You can't do everything all at once, and the sooner you realize that, the better.",
+          honest_text_2: data.honest_text_2 || "Building your social media takes time, strategy, and consistency. Without the right help, you're leaving growth, visibility, and potential clients on the table.",
+          honest_text_3: data.honest_text_3 || "You don't have to do it all. You just need the right support. It's time to move smart."
+        });
+        
+      } catch (err) {
+        console.error('Error fetching about content:', err);
+        setError('Failed to load content. Using default values.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAboutContent();
+  }, []);
+
+  // Construct profile image URL
+  const profileImageUrl = content.profile_image 
+    ? content.profile_image.includes('-') && content.profile_image.includes('.')
+      ? `${process.env.REACT_APP_SUPABASE_URL}/storage/v1/object/public/about-images/${content.profile_image}`
+      : `/assets/Aboutbackground/${content.profile_image}`
+    : profileImg;
+
+  if (loading) {
+    return (
+      <AboutSection>
+        <LoadingContainer>
+          <CircularProgress size={60} sx={{ color: '#D71768', mb: 2 }} />
+          <Typography variant="h6" sx={{ color: '#F7B6CF' }}>
+            Loading...
+          </Typography>
+        </LoadingContainer>
+      </AboutSection>
+    );
+  }
+
   return (
     <>
       <AboutSection>
         <ContentRow>
           <PhoneMockup>
-            <PhoneImg src={profileImg} alt="Profile" />
+            <PhoneImg src={profileImageUrl} alt="Profile" />
           </PhoneMockup>
           <RightContent>
             <AboutHeader variant="h1">About Me</AboutHeader>
-            <Headline>I'm a self-driven Social Media Manager helping  beauty, health, and wellness brands rise above the noise and attract the right clients!</Headline>
+            <Headline>{content.headline}</Headline>
             <Subheadline>
-              From content that connects to growth tactics that actually work, everything I do is guided by one goal: to help your business grow with purpose without you wasting time and effort.
+              {content.subheadline}
             </Subheadline>
           </RightContent>
         </ContentRow>
         <BottomBox>
           <TitleRow>
             <CloudIcon />
-            <HonestTitle>Let's Be Honest...</HonestTitle>
+            <HonestTitle>{content.honest_title}</HonestTitle>
           </TitleRow>
           <HonestText>
-            Running your business is overwhelming. You can't do everything all at once, and the sooner you realize that, the better.
+            {content.honest_text_1}
           </HonestText>
           <HonestText>
-            Building your social media takes time, strategy, and consistency. Without the right help, you're leaving growth, visibility, and potential clients on the table.
+            {content.honest_text_2}
           </HonestText>
           <HonestText>
-            You don't have to do it all. You just need the right support. It's time to move smart.
+            {content.honest_text_3}
           </HonestText>
         </BottomBox>
+        {error && (
+          <ErrorContainer>
+            <Alert severity="warning" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          </ErrorContainer>
+        )}
       </AboutSection>
     </>
   );
